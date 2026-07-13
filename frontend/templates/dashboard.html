@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Doctor Appointment System{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2><i class="fas fa-dashboard"></i> Dashboard</h2>
+    <p>Welcome back, {{ current_user.username }}!</p>
+
+    <!-- Stats -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card text-center bg-primary text-white">
+                <div class="card-body">
+                    <h3>{{ total }}</h3>
+                    <p>Total Appointments</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center bg-success text-white">
+                <div class="card-body">
+                    <h3>{{ completed }}</h3>
+                    <p>Completed</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center bg-warning text-white">
+                <div class="card-body">
+                    <h3>{{ upcoming|length }}</h3>
+                    <p>Upcoming</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center bg-danger text-white">
+                <div class="card-body">
+                    <h3>{{ cancelled }}</h3>
+                    <p>Cancelled</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <h5>Quick Actions</h5>
+                    <a href="{{ url_for('book_appointment') }}" class="btn btn-primary">
+                        <i class="fas fa-plus-circle"></i> Book Appointment
+                    </a>
+                    <a href="{{ url_for('my_appointments') }}" class="btn btn-info">
+                        <i class="fas fa-list"></i> View All Appointments
+                    </a>
+                    <a href="{{ url_for('doctors') }}" class="btn btn-success">
+                        <i class="fas fa-search"></i> Find Doctors
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Upcoming Appointments -->
+    <div class="card">
+        <div class="card-header bg-primary text-white">
+            <h5><i class="fas fa-calendar-alt"></i> Upcoming Appointments</h5>
+        </div>
+        <div class="card-body">
+            {% if upcoming %}
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Doctor</th>
+                                <th>Date</th>
+                                <th>Time</th>
+                                <th>Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for apt in upcoming %}
+                            <tr>
+                                <td>{{ apt.doctor.name }}</td>
+                                <td>{{ apt.date }}</td>
+                                <td>{{ apt.time }}</td>
+                                <td><span class="badge bg-success">{{ apt.status }}</span></td>
+                                <td>
+                                    <a href="{{ url_for('cancel_appointment', appointment_id=apt.id) }}" 
+                                       class="btn btn-danger btn-sm"
+                                       onclick="return confirm('Cancel this appointment?')">
+                                        Cancel
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <p class="text-muted">No upcoming appointments.</p>
+                <a href="{{ url_for('book_appointment') }}" class="btn btn-primary">
+                    Book Your First Appointment
+                </a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

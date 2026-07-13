@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+
+{% block title %}Doctor Details - Doctor Appointment System{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <!-- Doctor Info -->
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <h3>Dr. {{ doctor.name }}</h3>
+                    <p>
+                        <span class="badge bg-primary">{{ doctor.specialty }}</span>
+                    </p>
+                    <p><i class="fas fa-phone"></i> {{ doctor.phone or 'N/A' }}</p>
+                    <p><i class="fas fa-envelope"></i> {{ doctor.email or 'N/A' }}</p>
+                    <p><i class="fas fa-star text-warning"></i> {{ doctor.rating or '4.5' }} / 5.0</p>
+                    <p><i class="fas fa-clock"></i> {{ doctor.experience or '10' }} years experience</p>
+                    <p>{{ doctor.bio or 'No bio available' }}</p>
+                    
+                    {% if current_user.is_authenticated %}
+                    <a href="{{ url_for('book_appointment') }}?doctor={{ doctor.id }}" 
+                       class="btn btn-primary btn-lg w-100">
+                        <i class="fas fa-calendar-plus"></i> Book Appointment
+                    </a>
+                    {% else %}
+                    <a href="{{ url_for('login') }}" class="btn btn-warning btn-lg w-100">
+                        <i class="fas fa-sign-in-alt"></i> Login to Book
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Available Slots -->
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-body">
+                    <h4><i class="fas fa-clock"></i> Available Slots</h4>
+                    <div class="row">
+                        {% if slots %}
+                            {% for slot in slots %}
+                            <div class="col-md-3 mb-2">
+                                <div class="slot-card p-2 border rounded text-center">
+                                    <small>{{ slot.date }}</small>
+                                    <br>
+                                    <strong>{{ slot.time }}</strong>
+                                    {% if current_user.is_authenticated %}
+                                    <a href="{{ url_for('book_appointment') }}?slot={{ slot.id }}" 
+                                       class="btn btn-success btn-sm mt-1">
+                                        Book
+                                    </a>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            {% endfor %}
+                        {% else %}
+                        <div class="col-12">
+                            <div class="alert alert-info">
+                                No available slots for this doctor.
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

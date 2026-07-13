@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+
+{% block title %}Home - Doctor Appointment System{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <!-- Hero Section -->
+    <div class="row align-items-center py-5">
+        <div class="col-md-6">
+            <h1 class="display-4">Welcome to DocAppoint</h1>
+            <p class="lead">Book appointments with top doctors easily and quickly.</p>
+            <a href="{{ url_for('doctors') }}" class="btn btn-primary btn-lg">
+                <i class="fas fa-search"></i> Find a Doctor
+            </a>
+            {% if not current_user.is_authenticated %}
+            <a href="{{ url_for('register') }}" class="btn btn-success btn-lg ms-2">
+                <i class="fas fa-user-plus"></i> Get Started
+            </a>
+            {% endif %}
+        </div>
+        <div class="col-md-6 text-center">
+            <img src="https://via.placeholder.com/500x300/007bff/ffffff?text=Healthcare+Icon" 
+                 class="img-fluid" alt="Healthcare">
+        </div>
+    </div>
+
+    <!-- Statistics -->
+    <div class="row text-center py-4">
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body">
+                    <h3><i class="fas fa-user-md text-primary"></i> 50+</h3>
+                    <p>Expert Doctors</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body">
+                    <h3><i class="fas fa-users text-success"></i> 1000+</h3>
+                    <p>Happy Patients</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body">
+                    <h3><i class="fas fa-calendar-check text-info"></i> 500+</h3>
+                    <p>Appointments</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body">
+                    <h3><i class="fas fa-star text-warning"></i> 4.8/5</h3>
+                    <p>Average Rating</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Featured Doctors -->
+    <h2 class="text-center my-4">Featured Doctors</h2>
+    <div class="row">
+        {% for doctor in doctors %}
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">Dr. {{ doctor.name }}</h5>
+                    <p class="card-text">
+                        <span class="badge bg-primary">{{ doctor.specialty }}</span>
+                        <br>
+                        <small class="text-muted">
+                            <i class="fas fa-star text-warning"></i> {{ doctor.rating or '4.5' }}
+                            <i class="fas fa-user-md"></i> {{ doctor.experience or '10' }} years
+                        </small>
+                    </p>
+                    <a href="{{ url_for('doctor_detail', doctor_id=doctor.id) }}" 
+                       class="btn btn-outline-primary btn-sm">
+                        View Profile
+                    </a>
+                    {% if current_user.is_authenticated %}
+                    <a href="{{ url_for('book_appointment') }}?doctor={{ doctor.id }}" 
+                       class="btn btn-primary btn-sm">
+                        Book Appointment
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,353 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Dashboard - Doctor Appointment System{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2><i class="fas fa-cog"></i> Admin Dashboard</h2>
+    <p>Welcome back, {{ current_user.username }}!</p>
+
+    <!-- Stats -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card text-center bg-primary text-white">
+                <div class="card-body">
+                    <h3>{{ total_patients }}</h3>
+                    <p>Total Patients</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center bg-success text-white">
+                <div class="card-body">
+                    <h3>{{ total_doctors }}</h3>
+                    <p>Total Doctors</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center bg-info text-white">
+                <div class="card-body">
+                    <h3>{{ total_appointments }}</h3>
+                    <p>Total Appointments</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center bg-warning text-white">
+                <div class="card-body">
+                    <h3>{{ today_appointments }}</h3>
+                    <p>Today's Appointments</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin Actions -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <h5>Admin Actions</h5>
+                    <a href="{{ url_for('admin_doctors') }}" class="btn btn-primary">
+                        <i class="fas fa-user-md"></i> Manage Doctors
+                    </a>
+                    <button class="btn btn-success" onclick="showAddDoctorForm()">
+                        <i class="fas fa-plus"></i> Add Doctor
+                    </button>
+                    <button class="btn btn-info" onclick="showAddSlotsForm()">
+                        <i class="fas fa-clock"></i> Add Slots
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Appointments -->
+    <div class="card">
+        <div class="card-header bg-primary text-white">
+            <h5><i class="fas fa-list"></i> Recent Appointments</h5>
+        </div>
+        <div class="card-body">
+            {% if recent %}
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Patient</th>
+                                <th>Doctor</th>
+                                <th>Date</th>
+                                <th>Time</th>
+                                <th>Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for apt in recent %}
+                            <tr>
+                                <td>#{{ apt.id }}</td>
+                                <td>{{ apt.patient.username }}</td>
+                                <td>Dr. {{ apt.doctor.name }}</td>
+                                <td>{{ apt.date }}</td>
+                                <td>{{ apt.time }}</td>
+                                <td>
+                                    <span class="badge {% if apt.status == 'Scheduled' %}bg-success
+                                                      {% elif apt.status == 'Completed' %}bg-info
+                                                      {% else %}bg-danger{% endif %}">
+                                        {{ apt.status }}
+                                    </span>
+                                </td>
+                                <td>
+                                    {% if apt.status == 'Scheduled' %}
+                                    <a href="{{ url_for('complete_appointment', appointment_id=apt.id) }}" 
+                                       class="btn btn-success btn-sm">
+                                        Complete
+                                    </a>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <p class="text-muted">No recent appointments.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Add Doctor Modal -->
+<div class="modal fade" id="addDoctorModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="fas fa-user-plus"></i> Add New Doctor</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="addDoctorForm">
+                    <div class="mb-3">
+                        <label>Full Name <span class="text-danger">*</span></label>
+                        <input type="text" name="name" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label>Specialty <span class="text-danger">*</span></label>
+                        <input type="text" name="specialty" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label>Phone</label>
+                        <input type="text" name="phone" class="form-control">
+                    </div>
+                    <div class="mb-3">
+                        <label>Email</label>
+                        <input type="email" name="email" class="form-control">
+                    </div>
+                    <div class="mb-3">
+                        <label>Bio</label>
+                        <textarea name="bio" class="form-control" rows="2"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label>Experience (years)</label>
+                        <input type="number" name="experience" class="form-control" value="0">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="addDoctor()">Add Doctor</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Slots Modal -->
+<div class="modal fade" id="addSlotsModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="fas fa-clock"></i> Add Available Slots</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="addSlotsForm">
+                    <div class="mb-3">
+                        <label>Select Doctor <span class="text-danger">*</span></label>
+                        <select name="doctor_id" id="slot_doctor_id" class="form-select" required>
+                            <option value="">-- Select Doctor --</option>
+                            {% for doctor in doctors %}
+                            <option value="{{ doctor.id }}">Dr. {{ doctor.name }} - {{ doctor.specialty }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label>Date <span class="text-danger">*</span></label>
+                        <input type="date" name="date" id="slot_date" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label>Select Time Slots <span class="text-danger">*</span></label>
+                        <div class="row">
+                            <div class="col-6">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" value="09:00" id="time_0900">
+                                    <label class="form-check-label" for="time_0900">09:00 AM</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" value="10:00" id="time_1000">
+                                    <label class="form-check-label" for="time_1000">10:00 AM</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" value="11:00" id="time_1100">
+                                    <label class="form-check-label" for="time_1100">11:00 AM</label>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" value="14:00" id="time_1400">
+                                    <label class="form-check-label" for="time_1400">02:00 PM</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" value="15:00" id="time_1500">
+                                    <label class="form-check-label" for="time_1500">03:00 PM</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" value="16:00" id="time_1600">
+                                    <label class="form-check-label" for="time_1600">04:00 PM</label>
+                                </div>
+                            </div>
+                        </div>
+                        <small class="text-muted">Select all time slots you want to add</small>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-info" onclick="addSlots()">Add Slots</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// ============================================
+// ADD DOCTOR FUNCTION
+// ============================================
+function showAddDoctorForm() {
+    const modal = new bootstrap.Modal(document.getElementById('addDoctorModal'));
+    modal.show();
+}
+
+function addDoctor() {
+    const form = document.getElementById('addDoctorForm');
+    const formData = new FormData(form);
+    const data = Object.fromEntries(formData);
+    
+    if (!data.name || !data.specialty) {
+        alert('Please fill in Name and Specialty fields.');
+        return;
+    }
+    
+    const btn = document.querySelector('#addDoctorModal .btn-primary');
+    const originalText = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Adding...';
+    
+    fetch('/admin/doctors/add', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.error) {
+            alert('❌ Error: ' + data.error);
+        } else if (data.message) {
+            alert('✅ ' + data.message);
+            location.reload();
+        }
+    })
+    .catch(error => {
+        alert('❌ Error: ' + error.message);
+    })
+    .finally(() => {
+        btn.disabled = false;
+        btn.innerHTML = originalText;
+    });
+}
+
+// ============================================
+// ADD SLOTS FUNCTION
+// ============================================
+function showAddSlotsForm() {
+    const modal = new bootstrap.Modal(document.getElementById('addSlotsModal'));
+    modal.show();
+    
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('slot_date').value = today;
+}
+
+function addSlots() {
+    const doctorId = document.getElementById('slot_doctor_id').value;
+    const date = document.getElementById('slot_date').value;
+    
+    const timeCheckboxes = document.querySelectorAll('#addSlotsForm .form-check-input[type="checkbox"]');
+    const times = [];
+    timeCheckboxes.forEach(cb => {
+        if (cb.checked) {
+            times.push(cb.value);
+        }
+    });
+    
+    if (!doctorId) {
+        alert('Please select a doctor.');
+        return;
+    }
+    if (!date) {
+        alert('Please select a date.');
+        return;
+    }
+    if (times.length === 0) {
+        alert('Please select at least one time slot.');
+        return;
+    }
+    
+    const data = {
+        doctor_id: parseInt(doctorId),
+        date: date,
+        times: times
+    };
+    
+    const btn = document.querySelector('#addSlotsModal .btn-info');
+    const originalText = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Adding...';
+    
+    fetch('/admin/slots/add', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.error) {
+            alert('❌ Error: ' + data.error);
+        } else if (data.message) {
+            alert('✅ ' + data.message);
+            const modal = bootstrap.Modal.getInstance(document.getElementById('addSlotsModal'));
+            modal.hide();
+            document.querySelectorAll('#addSlotsForm .form-check-input[type="checkbox"]').forEach(cb => {
+                cb.checked = false;
+            });
+        }
+    })
+    .catch(error => {
+        alert('❌ Error: ' + error.message);
+    })
+    .finally(() => {
+        btn.disabled = false;
+        btn.innerHTML = originalText;
+    });
+}
+</script>
+{% endblock %}
