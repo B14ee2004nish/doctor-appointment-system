@@ -26,7 +26,8 @@ app = Flask(__name__,
 
 
 # Load configuration
-app.config.from_object(DevelopmentConfig)
+# app.config.from_object(DevelopmentConfig)
+app.config.from_object(ProductionConfig)
 
 # Initialize extensions
 db.init_app(app)
@@ -123,4 +124,5 @@ with app.app_context():
 # ============================================
 
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=5000)
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port)
